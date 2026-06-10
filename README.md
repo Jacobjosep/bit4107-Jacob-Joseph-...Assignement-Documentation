@@ -11,7 +11,6 @@
 
 ## 📄 Documentation
 
-- [Full Assignment Document](./Mobile%20app%20dev.docx)
 - This link has the following;
 The doctmentaion of week 1 and 2 assignment
 and the link to the Week 3 Figma Assignment of  A prototype on the readme Tab
