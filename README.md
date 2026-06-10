@@ -12,7 +12,7 @@
 ## 📄 Documentation
 
 - This link has the following;
-The doctmentaion of week 1 and 2 assignment
+The documentaion of week 1 and 2 assignment
 and the link to the Week 3 Figma Assignment of  A prototype on the readme Tab
 
 # user-interface-dev-using-figma
