@@ -1,0 +1,134 @@
+warning: in the working copy of 'android/gradle/wrapper/gradle-wrapper.properties', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/.flutter-plugins-dependencies b/.flutter-plugins-dependencies[m
+[1mindex 448f256..8cab690 100644[m
+[1m--- a/.flutter-plugins-dependencies[m
+[1m+++ b/.flutter-plugins-dependencies[m
+[36m@@ -1 +1 @@[m
+[31m-{"info":"This is a generated file; do not edit or check into version control.","plugins":{"ios":[{"name":"shared_preferences_foundation","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_foundation-2.5.6\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false},{"name":"sqflite_darwin","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\sqflite_darwin-2.4.3\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"android":[{"name":"shared_preferences_android","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_android-2.4.26\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"sqflite_android","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\sqflite_android-2.4.3\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"macos":[{"name":"shared_preferences_foundation","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_foundation-2.5.6\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false},{"name":"sqflite_darwin","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\sqflite_darwin-2.4.3\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"linux":[{"name":"path_provider_linux","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\path_provider_linux-2.2.1\\\\","native_build":false,"dependencies":[],"dev_dependency":false},{"name":"shared_preferences_linux","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_linux-2.4.1\\\\","native_build":false,"dependencies":["path_provider_linux"],"dev_dependency":false}],"windows":[{"name":"path_provider_windows","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\path_provider_windows-2.3.0\\\\","native_build":false,"dependencies":[],"dev_dependency":false},{"name":"shared_preferences_windows","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_windows-2.4.1\\\\","native_build":false,"dependencies":["path_provider_windows"],"dev_dependency":false}],"web":[{"name":"shared_preferences_web","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_web-2.4.3\\\\","dependencies":[],"dev_dependency":false}]},"dependencyGraph":[{"name":"path_provider_linux","dependencies":[]},{"name":"path_provider_windows","dependencies":[]},{"name":"shared_preferences","dependencies":["shared_preferences_android","shared_preferences_foundation","shared_preferences_linux","shared_preferences_web","shared_preferences_windows"]},{"name":"shared_preferences_android","dependencies":[]},{"name":"shared_preferences_foundation","dependencies":[]},{"name":"shared_preferences_linux","dependencies":["path_provider_linux"]},{"name":"shared_preferences_web","dependencies":[]},{"name":"shared_preferences_windows","dependencies":["path_provider_windows"]},{"name":"sqflite","dependencies":["sqflite_android","sqflite_darwin"]},{"name":"sqflite_android","dependencies":[]},{"name":"sqflite_darwin","dependencies":[]}],"date_created":"2026-06-16 08:26:57.876864","version":"3.44.1","swift_package_manager_enabled":{"ios":false,"macos":false}}[m
+\ No newline at end of file[m
+[32m+[m[32m{"info":"This is a generated file; do not edit or check into version control.","plugins":{"ios":[{"name":"shared_preferences_foundation","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_foundation-2.5.6\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false},{"name":"sqflite_darwin","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\sqflite_darwin-2.4.3\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"android":[{"name":"shared_preferences_android","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_android-2.4.26\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"sqflite_android","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\sqflite_android-2.4.3\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"macos":[{"name":"shared_preferences_foundation","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_foundation-2.5.6\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false},{"name":"sqflite_darwin","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\sqflite_darwin-2.4.3\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"linux":[{"name":"path_provider_linux","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\path_provider_linux-2.2.1\\\\","native_build":false,"dependencies":[],"dev_dependency":false},{"name":"shared_preferences_linux","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_linux-2.4.1\\\\","native_build":false,"dependencies":["path_provider_linux"],"dev_dependency":false}],"windows":[{"name":"path_provider_windows","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\path_provider_windows-2.3.0\\\\","native_build":false,"dependencies":[],"dev_dependency":false},{"name":"shared_preferences_windows","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_windows-2.4.1\\\\","native_build":false,"dependencies":["path_provider_windows"],"dev_dependency":false}],"web":[{"name":"shared_preferences_web","path":"C:\\\\Users\\\\Yacoub\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\shared_preferences_web-2.4.3\\\\","dependencies":[],"dev_dependency":false}]},"dependencyGraph":[{"name":"path_provider_linux","dependencies":[]},{"name":"path_provider_windows","dependencies":[]},{"name":"shared_preferences","dependencies":["shared_preferences_android","shared_preferences_foundation","shared_preferences_linux","shared_preferences_web","shared_preferences_windows"]},{"name":"shared_preferences_android","dependencies":[]},{"name":"shared_preferences_foundation","dependencies":[]},{"name":"shared_preferences_linux","dependencies":["path_provider_linux"]},{"name":"shared_preferences_web","dependencies":[]},{"name":"shared_preferences_windows","dependencies":["path_provider_windows"]},{"name":"sqflite","dependencies":["sqflite_android","sqflite_darwin"]},{"name":"sqflite_android","dependencies":[]},{"name":"sqflite_darwin","dependencies":[]}],"date_created":"2026-06-16 09:41:41.259598","version":"3.44.1","swift_package_manager_enabled":{"ios":false,"macos":false}}[m
+\ No newline at end of file[m
+[1mdiff --git a/android/app/build.gradle.kts b/android/app/build.gradle.kts[m
+[1mdeleted file mode 100644[m
+[1mindex e575ae1..0000000[m
+[1m--- a/android/app/build.gradle.kts[m
+[1m+++ /dev/null[m
+[36m@@ -1,45 +0,0 @@[m
+[31m-plugins {[m
+[31m-    id("com.android.application")[m
+[31m-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.[m
+[31m-    id("dev.flutter.flutter-gradle-plugin")[m
+[31m-}[m
+[31m-[m
+[31m-android {[m
+[31m-    namespace = "com.example.simple_app"[m
+[31m-    compileSdk = flutter.compileSdkVersion[m
+[31m-    ndkVersion = flutter.ndkVersion[m
+[31m-[m
+[31m-    compileOptions {[m
+[31m-        sourceCompatibility = JavaVersion.VERSION_17[m
+[31m-        targetCompatibility = JavaVersion.VERSION_17[m
+[31m-    }[m
+[31m-[m
+[31m-    defaultConfig {[m
+[31m-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).[m
+[31m-        applicationId = "com.example.simple_app"[m
+[31m-        // You can update the following values to match your application needs.[m
+[31m-        // For more information, see: https://flutter.dev/to/review-gradle-config.[m
+[31m-        minSdk = flutter.minSdkVersion[m
+[31m-        targetSdk = flutter.targetSdkVersion[m
+[31m-        versionCode = flutter.versionCode[m
+[31m-        versionName = flutter.versionName[m
+[31m-    }[m
+[31m-[m
+[31m-    buildTypes {[m
+[31m-        release {[m
+[31m-            // TODO: Add your own signing config for the release build.[m
+[31m-            // Signing with the debug keys for now, so `flutter run --release` works.[m
+[31m-            signingConfig = signingConfigs.getByName("debug")[m
+[31m-        }[m
+[31m-    }[m
+[31m-}[m
+[31m-[m
+[31m-kotlin {[m
+[31m-    compilerOptions {[m
+[31m-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17[m
+[31m-    }[m
+[31m-}[m
+[31m-[m
+[31m-flutter {[m
+[31m-    source = "../.."[m
+[31m-}[m
+[1mdiff --git a/android/build.gradle.kts b/android/build.gradle.kts[m
+[1mdeleted file mode 100644[m
+[1mindex dbee657..0000000[m
+[1m--- a/android/build.gradle.kts[m
+[1m+++ /dev/null[m
+[36m@@ -1,24 +0,0 @@[m
+[31m-allprojects {[m
+[31m-    repositories {[m
+[31m-        google()[m
+[31m-        mavenCentral()[m
+[31m-    }[m
+[31m-}[m
+[31m-[m
+[31m-val newBuildDir: Directory =[m
+[31m-    rootProject.layout.buildDirectory[m
+[31m-        .dir("../../build")[m
+[31m-        .get()[m
+[31m-rootProject.layout.buildDirectory.value(newBuildDir)[m
+[31m-[m
+[31m-subprojects {[m
+[31m-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)[m
+[31m-    project.layout.buildDirectory.value(newSubprojectBuildDir)[m
+[31m-}[m
+[31m-subprojects {[m
+[31m-    project.evaluationDependsOn(":app")[m
+[31m-}[m
+[31m-[m
+[31m-tasks.register<Delete>("clean") {[m
+[31m-    delete(rootProject.layout.buildDirectory)[m
+[31m-}[m
+[1mdiff --git a/android/gradle/wrapper/gradle-wrapper.properties b/android/gradle/wrapper/gradle-wrapper.properties[m
+[1mindex 2d428bf..1e2fbf0 100644[m
+[1m--- a/android/gradle/wrapper/gradle-wrapper.properties[m
+[1m+++ b/android/gradle/wrapper/gradle-wrapper.properties[m
+[36m@@ -1,5 +1,5 @@[m
+ distributionBase=GRADLE_USER_HOME[m
+ distributionPath=wrapper/dists[m
+[32m+[m[32mdistributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-bin.zip[m
+ zipStoreBase=GRADLE_USER_HOME[m
+ zipStorePath=wrapper/dists[m
+[31m-distributionUrl=https\://services.gradle.org/distributions/gradle-9.1.0-all.zip[m
+[1mdiff --git a/android/settings.gradle.kts b/android/settings.gradle.kts[m
+[1mdeleted file mode 100644[m
+[1mindex c21f0c5..0000000[m
+[1m--- a/android/settings.gradle.kts[m
+[1m+++ /dev/null[m
+[36m@@ -1,26 +0,0 @@[m
+[31m-pluginManagement {[m
+[31m-    val flutterSdkPath =[m
+[31m-        run {[m
+[31m-            val properties = java.util.Properties()[m
+[31m-            file("local.properties").inputStream().use { properties.load(it) }[m
+[31m-            val flutterSdkPath = properties.getProperty("flutter.sdk")[m
+[31m-            require(flutterSdkPath != null) { "flutter.sdk not set in local.properties" }[m
+[31m-            flutterSdkPath[m
+[31m-        }[m
+[31m-[m
+[31m-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")[m
+[31m-[m
+[31m-    repositories {[m
+[31m-        google()[m
+[31m-        mavenCentral()[m
+[31m-        gradlePluginPortal()[m
+[31m-    }[m
+[31m-}[m
+[31m-[m
+[31m-plugins {[m
+[31m-    id("dev.flutter.flutter-plugin-loader") version "1.0.0"[m
+[31m-    id("com.android.application") version "9.0.1" apply false[m
+[31m-    id("org.jetbrains.kotlin.android") version "2.3.20" apply false[m
+[31m-}[m
+[31m-[m
+[31m-include(":app")[m

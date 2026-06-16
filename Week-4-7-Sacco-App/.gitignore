@@ -1,0 +1,52 @@
+# Flutter
+.DS_Store
+.dart_tool/
+.pub/
+.pub-cache/
+.packages
+build/
+*.iml
+*.lock
+*.pid
+*.swp
+*.swo
+.idea/
+.vscode/
+*.log
+
+# Android
+android/.gradle/
+android/.idea/
+android/local.properties
+android/app/src/main/debug/
+android/app/src/main/profile/
+android/gradlew
+android/gradlew.bat
+android/app/build/
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/App.framework/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# macOS
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/Generated.xcconfig
+macos/Flutter/flutter_export_environment.sh
+
+# Windows
+windows/Flutter/GeneratedPluginRegistrant.*
+windows/runner/GeneratedPluginRegistrant.*
+
+# Linux
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.h
+linux/flutter/generated_plugins.cmake
+
+# Temporary files
+*.tmp
+*.temp
