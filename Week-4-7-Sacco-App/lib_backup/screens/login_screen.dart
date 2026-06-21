@@ -11,15 +11,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _memberController = TextEditingController();
+  final TextEditingController _pinController = TextEditingController();
+  final SaccoDatabase _db = SaccoDatabase();
   bool _isLoading = false;
   String _error = '';
-  bool _obscurePassword = true;
+  bool _obscurePin = true;
 
   Future<void> _login() async {
-    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-      setState(() => _error = 'Please enter Username and Password');
+    if (_memberController.text.isEmpty || _pinController.text.isEmpty) {
+      setState(() => _error = 'Please enter Member Number and PIN');
       return;
     }
 
@@ -29,39 +30,24 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final db = SaccoDatabase();
-      
-      // Check if user exists with given username and password
-      final user = await db.getUserByUsername(_usernameController.text);
+      User? user = await _db.login(_memberController.text, _pinController.text);
       
       if (user != null) {
-        // For demo, we're not hashing passwords. In production, use bcrypt or similar.
-        // For now, we'll check if the password matches (using a simple check)
-        // Since we don't have password field in UserModel, we'll do a separate check
+        // Save login info
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('loggedInUserId', user.id!);
+        await prefs.setString('userRole', user.role);
+        await prefs.setString('userName', user.fullName);
         
-        // For demonstration, we'll check credentials from the database directly
-        // We need to add a login method to the database
-        final isValid = await db.loginUser(_usernameController.text, _passwordController.text);
-        
-        if (isValid) {
-          // Save login info
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('loggedInUserId', user.id);
-          await prefs.setString('userRole', user.role);
-          await prefs.setString('userName', user.fullName);
-          
-          if (mounted) {
-            if (user.role == 'admin') {
-              Navigator.pushReplacementNamed(context, '/admin');
-            } else {
-              Navigator.pushReplacementNamed(context, '/member');
-            }
+        if (mounted) {
+          if (user.role == 'admin') {
+            Navigator.pushReplacementNamed(context, '/admin');
+          } else {
+            Navigator.pushReplacementNamed(context, '/member');
           }
-        } else {
-          setState(() => _error = 'Invalid password');
         }
       } else {
-        setState(() => _error = 'User not found. Please register first.');
+        setState(() => _error = 'Invalid credentials or account not approved');
       }
     } catch (e) {
       setState(() => _error = 'Login error: $e');
@@ -116,9 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 32),
                       TextField(
-                        controller: _usernameController,
+                        controller: _memberController,
                         decoration: const InputDecoration(
-                          labelText: 'Username',
+                          labelText: 'Member Number',
                           prefixIcon: Icon(Icons.person),
                           border: OutlineInputBorder(),
                         ),
@@ -126,31 +112,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
                       TextField(
-                        controller: _passwordController,
+                        controller: _pinController,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'PIN',
                           prefixIcon: const Icon(Icons.lock),
                           suffixIcon: IconButton(
-                            icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            icon: Icon(_obscurePin ? Icons.visibility : Icons.visibility_off),
+                            onPressed: () => setState(() => _obscurePin = !_obscurePin),
                           ),
                           border: const OutlineInputBorder(),
                         ),
-                        obscureText: _obscurePassword,
-                        keyboardType: TextInputType.text,
+                        obscureText: _obscurePin,
+                        keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Contact admin to reset password'),
-                              ),
-                            );
-                          },
-                          child: const Text('Forgot Password?'),
+                          onPressed: () {},
+                          child: const Text('Forgot PIN?'),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -192,25 +172,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             textAlign: TextAlign.center,
                           ),
                         ),
-                      const SizedBox(height: 16),
-                      // Show test credentials
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Column(
-                          children: [
-                            Text(
-                              'Test Credentials:',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text('Admin: admin / admin123'),
-                            Text('Member: john / member123'),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../database/sacco_database.dart';
-import '../models/user_model.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -10,155 +9,221 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final SaccoDatabase _db = SaccoDatabase();
-  
   final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _memberNumberController = TextEditingController();
-  final TextEditingController _idNumberController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _pinController = TextEditingController();
-  final TextEditingController _confirmPinController = TextEditingController();
-  
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
-  bool _obscurePin = true;
-  bool _obscureConfirmPin = true;
+  String _error = '';
+  bool _obscurePassword = true;
 
   Future<void> _register() async {
-    if (_formKey.currentState!.validate()) {
-      if (_pinController.text != _confirmPinController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('PINs do not match'), backgroundColor: Colors.red),
-        );
+    // Validation
+    if (_fullNameController.text.isEmpty) {
+      setState(() => _error = 'Please enter full name');
+      return;
+    }
+    if (_usernameController.text.isEmpty) {
+      setState(() => _error = 'Please enter username');
+      return;
+    }
+    if (_phoneController.text.isEmpty) {
+      setState(() => _error = 'Please enter phone number');
+      return;
+    }
+    if (_passwordController.text.isEmpty) {
+      setState(() => _error = 'Please enter password');
+      return;
+    }
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() => _error = 'Passwords do not match');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _error = '';
+    });
+
+    try {
+      final db = SaccoDatabase();
+      
+      // Check if username already exists
+      final existingUser = await db.getUserByUsername(_usernameController.text);
+      if (existingUser != null) {
+        setState(() => _error = 'Username already taken. Please choose another.');
         return;
       }
 
-      setState(() => _isLoading = true);
-
-      final user = User(
-        fullName: _fullNameController.text.trim(),
-        memberNumber: _memberNumberController.text.trim(),
-        idNumber: _idNumberController.text.trim(),
-        phoneNumber: _phoneController.text.trim(),
-        email: _emailController.text.trim(),
-        pin: _pinController.text,
-        registrationDate: DateTime.now(),
+      // Create new user
+      await db.createUser(
+        fullName: _fullNameController.text,
+        username: _usernameController.text,
+        phone: _phoneController.text,
+        password: _passwordController.text,
+        role: 'member',
       );
 
-      try {
-        int result = await _db.registerUser(user);
-        if (result > 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Registration successful! Awaiting admin approval.'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Registration failed'), backgroundColor: Colors.red),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Member number or ID already exists'), backgroundColor: Colors.red),
-        );
-      } finally {
-        setState(() => _isLoading = false);
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registration successful! Please login.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate back to login
+      Navigator.pop(context);
+    } catch (e) {
+      setState(() => _error = 'Registration error: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Member Registration'),
-        backgroundColor: Colors.green,
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _buildTextField(_fullNameController, 'Full Name', Icons.person, false, TextInputType.text),
-              const SizedBox(height: 12),
-              _buildTextField(_memberNumberController, 'Member Number', Icons.numbers, false, TextInputType.text),
-              const SizedBox(height: 12),
-              _buildTextField(_idNumberController, 'ID Number', Icons.badge, false, TextInputType.text),
-              const SizedBox(height: 12),
-              _buildTextField(_phoneController, 'Phone Number', Icons.phone, false, TextInputType.phone),
-              const SizedBox(height: 12),
-              _buildTextField(_emailController, 'Email', Icons.email, false, TextInputType.emailAddress),
-              const SizedBox(height: 12),
-              _buildTextField(_pinController, 'PIN', Icons.lock, _obscurePin, TextInputType.number),
-              const SizedBox(height: 12),
-              _buildTextField(_confirmPinController, 'Confirm PIN', Icons.lock_outline, _obscureConfirmPin, TextInputType.number),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green, Colors.greenAccent],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.person_add,
+                        size: 64,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Create Account',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const Text(
+                        'Join 2NK SACCO today',
+                        style: TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      TextField(
+                        controller: _fullNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Full Name',
+                          prefixIcon: Icon(Icons.person),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Username',
+                          prefixIcon: Icon(Icons.account_circle),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _phoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'Phone Number',
+                          prefixIcon: Icon(Icons.phone),
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock),
+                          suffixIcon: IconButton(
+                            icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                          border: const OutlineInputBorder(),
+                        ),
+                        obscureText: _obscurePassword,
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _confirmPasswordController,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirm Password',
+                          prefixIcon: Icon(Icons.lock_outline),
+                          border: OutlineInputBorder(),
+                        ),
+                        obscureText: _obscurePassword,
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _register,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  'REGISTER',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Already have an account? "),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Login Here'),
+                          ),
+                        ],
+                      ),
+                      if (_error.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Text(
+                            _error,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                    ],
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('REGISTER', style: TextStyle(fontSize: 16)),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Already have an account? Login'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon,
-    bool obscure,
-    TextInputType type,
-  ) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-        suffixIcon: (label == 'PIN' || label == 'Confirm PIN')
-            ? IconButton(
-                icon: Icon(obscure ? Icons.visibility : Icons.visibility_off),
-                onPressed: () {
-                  setState(() {
-                    if (label == 'PIN') {
-                      _obscurePin = !_obscurePin;
-                    } else {
-                      _obscureConfirmPin = !_obscureConfirmPin;
-                    }
-                  });
-                },
-              )
-            : null,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      keyboardType: type,
-      obscureText: obscure,
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Please enter $label';
-        if (label == 'PIN' && value.length != 4) return 'PIN must be 4 digits';
-        if (label == 'Confirm PIN' && value.length != 4) return 'PIN must be 4 digits';
-        return null;
-      },
     );
   }
 }

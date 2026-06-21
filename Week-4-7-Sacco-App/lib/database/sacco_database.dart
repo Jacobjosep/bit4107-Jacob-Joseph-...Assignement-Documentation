@@ -1,18 +1,16 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/user_model.dart';
+import '../models/transaction_model.dart';
 import '../models/loan_model.dart';
-
-// Import transaction with alias to avoid conflict with sqflite's Transaction
-import '../models/transaction_model.dart' as tx;
 
 class SaccoDatabase {
   static final SaccoDatabase _instance = SaccoDatabase._internal();
   static Database? _database;
 
-  SaccoDatabase._internal();
-
   factory SaccoDatabase() => _instance;
+
+  SaccoDatabase._internal();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -21,332 +19,229 @@ class SaccoDatabase {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'sacco_app.db');
+    String path = join(await getDatabasesPath(), 'sacco_database.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 1,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Users table
+    // Create users table
     await db.execute('''
-      CREATE TABLE users(
+      CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fullName TEXT NOT NULL,
-        memberNumber TEXT UNIQUE NOT NULL,
-        idNumber TEXT UNIQUE NOT NULL,
-        phoneNumber TEXT NOT NULL,
-        email TEXT,
-        pin TEXT NOT NULL,
-        status TEXT DEFAULT 'pending',
-        registrationDate TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        username TEXT UNIQUE NOT NULL,
+        phone TEXT NOT NULL,
+        password TEXT NOT NULL,
         role TEXT DEFAULT 'member',
-        savingsBalance REAL DEFAULT 0,
-        loanBalance REAL DEFAULT 0,
-        isLoggedIn INTEGER DEFAULT 0
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
 
-    // Transactions table
+    // Create transactions table
     await db.execute('''
-      CREATE TABLE transactions(
+      CREATE TABLE transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        type TEXT NOT NULL,
         amount REAL NOT NULL,
-        type INTEGER NOT NULL,
-        description TEXT,
-        date TEXT NOT NULL,
-        balanceAfter REAL NOT NULL,
-        referenceNumber TEXT,
-        recipientId INTEGER,
-        FOREIGN KEY(userId) REFERENCES users(id)
+        description TEXT NOT NULL,
+        reference TEXT NOT NULL,
+        date TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
       )
     ''');
 
-    // Loans table
+    // Create loans table
     await db.execute('''
-      CREATE TABLE loans(
+      CREATE TABLE loans (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        member_name TEXT NOT NULL,
         amount REAL NOT NULL,
-        interestRate REAL DEFAULT 12,
-        durationMonths INTEGER NOT NULL,
-        purpose TEXT,
-        status INTEGER DEFAULT 0,
-        applicationDate TEXT NOT NULL,
-        approvalDate TEXT,
-        disbursementDate TEXT,
-        amountPaid REAL DEFAULT 0,
-        remainingBalance REAL NOT NULL,
-        FOREIGN KEY(userId) REFERENCES users(id)
+        purpose TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        date TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
       )
     ''');
 
-    // Insert default admin user
+    // Insert default admin
     await db.insert('users', {
-      'fullName': 'System Admin',
-      'memberNumber': 'ADMIN001',
-      'idNumber': 'ADMIN001',
-      'phoneNumber': '0700000000',
-      'email': 'admin@2nksacco.com',
-      'pin': '1234',
-      'status': 'approved',
-      'registrationDate': DateTime.now().toIso8601String(),
+      'full_name': 'Admin User',
+      'username': 'admin',
+      'phone': '0700000000',
+      'password': 'admin123',
       'role': 'admin',
-      'savingsBalance': 0,
-      'loanBalance': 0,
-      'isLoggedIn': 0,
+    });
+
+    // Insert test member
+    await db.insert('users', {
+      'full_name': 'John Member',
+      'username': 'john',
+      'phone': '0712345678',
+      'password': 'member123',
+      'role': 'member',
     });
   }
 
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Migration logic if needed
-  }
+  // ============ USER METHODS ============
 
-  // ============ USER OPERATIONS ============
-  
-  Future<int> registerUser(User user) async {
-    Database db = await database;
-    return await db.insert('users', user.toMap());
-  }
-
-  Future<User?> login(String memberNumber, String pin) async {
-    Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(
-      'users',
-      where: 'memberNumber = ? AND pin = ?',
-      whereArgs: [memberNumber, pin],
-    );
-    
-    if (maps.isNotEmpty) {
-      User user = User.fromMap(maps.first);
-      if (user.status == 'approved') {
-        await db.update(
-          'users',
-          {'isLoggedIn': 1},
-          where: 'id = ?',
-          whereArgs: [user.id],
-        );
-        return user;
-      }
-    }
-    return null;
-  }
-
-  Future<void> logout(int userId) async {
-    Database db = await database;
-    await db.update(
-      'users',
-      {'isLoggedIn': 0},
-      where: 'id = ?',
-      whereArgs: [userId],
-    );
-  }
-
-  Future<List<User>> getPendingUsers() async {
-    Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(
-      'users',
-      where: 'status = ? AND role = ?',
-      whereArgs: ['pending', 'member'],
-    );
-    return List.generate(maps.length, (i) => User.fromMap(maps[i]));
-  }
-
-  Future<List<User>> getAllMembers() async {
-    Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(
-      'users',
-      where: 'role = ?',
-      whereArgs: ['member'],
-      orderBy: 'fullName ASC',
-    );
-    return List.generate(maps.length, (i) => User.fromMap(maps[i]));
-  }
-
-  Future<int> approveUser(int userId) async {
-    Database db = await database;
-    return await db.update(
-      'users',
-      {'status': 'approved'},
-      where: 'id = ?',
-      whereArgs: [userId],
-    );
-  }
-
-  Future<int> rejectUser(int userId) async {
-    Database db = await database;
-    return await db.update(
-      'users',
-      {'status': 'rejected'},
-      where: 'id = ?',
-      whereArgs: [userId],
-    );
-  }
-
-  Future<User?> getUserById(int id) async {
-    Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(
+  Future<UserModel?> getUser(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
       'users',
       where: 'id = ?',
       whereArgs: [id],
     );
-    if (maps.isNotEmpty) return User.fromMap(maps.first);
-    return null;
+    if (maps.isEmpty) return null;
+    return UserModel.fromMap(maps.first);
   }
 
-  // ============ TRANSACTION OPERATIONS ============
-  
-  Future<int> addTransaction(tx.Transaction transaction) async {
-    Database db = await database;
-    return await db.insert('transactions', transaction.toMap());
+  Future<UserModel?> getUserByUsername(String username) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'username = ?',
+      whereArgs: [username],
+    );
+    if (maps.isEmpty) return null;
+    return UserModel.fromMap(maps.first);
   }
 
-  Future<List<tx.Transaction>> getUserTransactions(int userId) async {
-    Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(
+  Future<List<UserModel>> getAllUsers() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('users');
+    return maps.map((map) => UserModel.fromMap(map)).toList();
+  }
+
+  Future<int> createUser({
+    required String fullName,
+    required String username,
+    required String phone,
+    required String password,
+    String role = 'member',
+  }) async {
+    final db = await database;
+    return await db.insert('users', {
+      'full_name': fullName,
+      'username': username,
+      'phone': phone,
+      'password': password,
+      'role': role,
+    });
+  }
+
+  Future<bool> loginUser(String username, String password) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+    return maps.isNotEmpty;
+  }
+
+  Future<int> deleteUser(int id) async {
+    final db = await database;
+    return await db.delete(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // ============ TRANSACTION METHODS ============
+
+  Future<int> createTransaction({
+    required int userId,
+    required String type,
+    required double amount,
+    required String description,
+    required String reference,
+  }) async {
+    final db = await database;
+    return await db.insert('transactions', {
+      'user_id': userId,
+      'type': type,
+      'amount': amount,
+      'description': description,
+      'reference': reference,
+    });
+  }
+
+  Future<List<TransactionModel>> getUserTransactions(
+    int userId, {
+    int limit = 999,
+  }) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
       'transactions',
-      where: 'userId = ?',
+      where: 'user_id = ?',
       whereArgs: [userId],
       orderBy: 'date DESC',
-      limit: 20,
+      limit: limit,
     );
-    return List.generate(maps.length, (i) => tx.Transaction.fromMap(maps[i]));
+    return maps.map((map) => TransactionModel.fromMap(map)).toList();
   }
 
-  // Update user balance
-  Future<bool> updateBalance(int userId, double amount, bool isDeposit) async {
-    Database db = await database;
-    User? user = await getUserById(userId);
-    if (user == null) return false;
-    
-    double newBalance = isDeposit 
-        ? user.savingsBalance + amount 
-        : user.savingsBalance - amount;
-    
-    if (newBalance < 0) return false;
-    
-    int result = await db.update(
-      'users',
-      {'savingsBalance': newBalance},
-      where: 'id = ?',
-      whereArgs: [userId],
+  Future<List<TransactionModel>> getAllTransactions() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'transactions',
+      orderBy: 'date DESC',
     );
-    return result > 0;
+    return maps.map((map) => TransactionModel.fromMap(map)).toList();
   }
 
-  // ============ LOAN OPERATIONS ============
-  
-  Future<int> applyForLoan(Loan loan) async {
-    Database db = await database;
-    return await db.insert('loans', loan.toMap());
+  // ============ LOAN METHODS ============
+
+  Future<int> createLoan({
+    required int userId,
+    required String memberName,
+    required double amount,
+    required String purpose,
+  }) async {
+    final db = await database;
+    return await db.insert('loans', {
+      'user_id': userId,
+      'member_name': memberName,
+      'amount': amount,
+      'purpose': purpose,
+      'status': 'pending',
+    });
   }
 
-  Future<List<Loan>> getUserLoans(int userId) async {
-    Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(
+  Future<List<LoanModel>> getUserLoans(int userId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
       'loans',
-      where: 'userId = ?',
+      where: 'user_id = ?',
       whereArgs: [userId],
-      orderBy: 'applicationDate DESC',
+      orderBy: 'date DESC',
     );
-    return List.generate(maps.length, (i) => Loan.fromMap(maps[i]));
+    return maps.map((map) => LoanModel.fromMap(map)).toList();
   }
 
-  Future<List<Loan>> getPendingLoans() async {
-    Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(
+  Future<List<LoanModel>> getAllLoans() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
       'loans',
-      where: 'status = ?',
-      whereArgs: [0], // 0 = pending
-      orderBy: 'applicationDate ASC',
+      orderBy: 'date DESC',
     );
-    return List.generate(maps.length, (i) => Loan.fromMap(maps[i]));
+    return maps.map((map) => LoanModel.fromMap(map)).toList();
   }
 
-  Future<int> updateLoanStatus(int loanId, LoanStatus status, bool disburse) async {
-    Database db = await database;
-    Map<String, dynamic> updates = {'status': status.index};
-    
-    if (status == LoanStatus.approved) {
-      updates['approvalDate'] = DateTime.now().toIso8601String();
-    }
-    if (disburse && status == LoanStatus.disbursed) {
-      updates['disbursementDate'] = DateTime.now().toIso8601String();
-    }
-    
+  Future<int> updateLoanStatus(int loanId, String status) async {
+    final db = await database;
     return await db.update(
       'loans',
-      updates,
+      {'status': status},
       where: 'id = ?',
       whereArgs: [loanId],
     );
-  }
-
-  // ============ DASHBOARD STATS ============
-  
-  Future<Map<String, dynamic>> getDashboardStats(int userId) async {
-    User? user = await getUserById(userId);
-    List<tx.Transaction> recentTransactions = await getUserTransactions(userId);
-    
-    // Get active loans
-    List<Loan> loans = await getUserLoans(userId);
-    double totalLoanBalance = 0;
-    for (var loan in loans) {
-      if (loan.status != LoanStatus.rejected && loan.status != LoanStatus.completed) {
-        totalLoanBalance += loan.remainingBalance;
-      }
-    }
-    
-    return {
-      'user': user,
-      'savingsBalance': user?.savingsBalance ?? 0,
-      'loanBalance': totalLoanBalance,
-      'recentTransactions': recentTransactions,
-    };
-  }
-
-  // ============ TRANSFER ============
-  
-  Future<bool> transferFunds(int fromUserId, int toUserId, double amount, String description) async {
-    Database db = await database;
-    
-    User? fromUser = await getUserById(fromUserId);
-    User? toUser = await getUserById(toUserId);
-    
-    if (fromUser == null || toUser == null) return false;
-    if (fromUser.savingsBalance < amount) return false;
-    
-    // Deduct from sender
-    await db.update(
-      'users',
-      {'savingsBalance': fromUser.savingsBalance - amount},
-      where: 'id = ?',
-      whereArgs: [fromUserId],
-    );
-    
-    // Add to recipient
-    await db.update(
-      'users',
-      {'savingsBalance': toUser.savingsBalance + amount},
-      where: 'id = ?',
-      whereArgs: [toUserId],
-    );
-    
-    // Record transaction for sender
-    await addTransaction(tx.Transaction(
-      userId: fromUserId,
-      amount: amount,
-      type: tx.TransactionType.transfer,
-      description: description,
-      date: DateTime.now(),
-      balanceAfter: fromUser.savingsBalance - amount,
-      recipientId: toUserId,
-    ));
-    
-    return true;
   }
 }

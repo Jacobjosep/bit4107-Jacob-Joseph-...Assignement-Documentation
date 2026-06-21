@@ -1,116 +1,142 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/sacco_database.dart';
-import '../models/user_model.dart';
-import '../models/transaction_model.dart';
 
 class DepositScreen extends StatefulWidget {
-  final User user;
-  const DepositScreen({super.key, required this.user});
+  const DepositScreen({super.key});
 
   @override
   State<DepositScreen> createState() => _DepositScreenState();
 }
 
 class _DepositScreenState extends State<DepositScreen> {
-  final SaccoDatabase _db = SaccoDatabase();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  bool _isLoading = false;
-
-  Future<void> _deposit() async {
-    double? amount = double.tryParse(_amountController.text);
-    if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount'), backgroundColor: Colors.red),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    bool success = await _db.updateBalance(widget.user.id!, amount, true);
-    
-    if (success) {
-      await _db.addTransaction(Transaction(
-        userId: widget.user.id!,
-        amount: amount,
-        type: TransactionType.deposit,
-        description: _descriptionController.text.isEmpty ? 'Deposit' : _descriptionController.text,
-        date: DateTime.now(),
-        balanceAfter: widget.user.savingsBalance + amount,
-      ));
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Deposit successful!'), backgroundColor: Colors.green),
-      );
-      Navigator.pop(context, true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Deposit failed'), backgroundColor: Colors.red),
-      );
-    }
-    
-    setState(() => _isLoading = false);
-  }
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Make Deposit'), backgroundColor: Colors.green),
+      appBar: AppBar(
+        title: const Text('Deposit Money'),
+        backgroundColor: Colors.green,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    const Text('Current Balance', style: TextStyle(color: Colors.grey)),
-                    Text(
-                      'KES ${widget.user.savingsBalance.toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+            const Text(
+              'Enter Deposit Amount',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _amountController,
+              keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Amount (KES)',
-                prefixIcon: Icon(Icons.attach_money),
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.money),
               ),
-              keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextField(
               controller: _descriptionController,
               decoration: const InputDecoration(
                 labelText: 'Description (Optional)',
-                prefixIcon: Icon(Icons.note),
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.description),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _deposit,
+                onPressed: _deposit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.all(16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: _isLoading
+                child: isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('CONFIRM DEPOSIT', style: TextStyle(fontSize: 16)),
+                    : const Text(
+                        'Deposit',
+                        style: TextStyle(fontSize: 18),
+                      ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _deposit() async {
+    if (_amountController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter an amount')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final amount = double.parse(_amountController.text);
+      if (amount <= 0) {
+        throw Exception('Amount must be greater than 0');
+      }
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? userId = prefs.getInt('loggedInUserId');
+
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+
+      final db = SaccoDatabase();
+      await db.createTransaction(
+        userId: userId,
+        type: 'deposit',
+        amount: amount,
+        description: _descriptionController.text.isNotEmpty
+            ? _descriptionController.text
+            : 'Deposit',
+        reference: 'DEP${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('KES ${amount.toStringAsFixed(2)} deposited successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      _amountController.clear();
+      _descriptionController.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 }
