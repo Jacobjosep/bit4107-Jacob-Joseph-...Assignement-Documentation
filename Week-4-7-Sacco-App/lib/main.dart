@@ -1,59 +1,56 @@
+// File: lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'database/sacco_database.dart';
-import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/member_dashboard.dart';
-import 'screens/admin_dashboard.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'providers/auth_provider.dart';
+import 'providers/loan_provider.dart';
+import 'providers/transaction_provider.dart';
+import 'screens/splash_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize database
-  await SaccoDatabase().database;
-  
-  // Check if user is already logged in
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  int? loggedInUserId = prefs.getInt('loggedInUserId');
-  String? userRole = prefs.getString('userRole');
-  
-  runApp(MyApp(
-    initialRoute: loggedInUserId != null ? (userRole == 'admin' ? '/admin' : '/member') : '/login',
-  ));
+void main() {
+  runApp(const TwoNKApp());
 }
 
-class MyApp extends StatelessWidget {
-  final String initialRoute;
-  
-  const MyApp({super.key, required this.initialRoute});
+class TwoNKApp extends StatelessWidget {
+  const TwoNKApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '2NK SACCO - Mobile Banking',
-      theme: ThemeData(
-        primaryColor: Colors.green,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
-          primary: Colors.green,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => LoanProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionProvider()),
+      ],
+      child: MaterialApp(
+        title: '2NK SACCO',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+          textTheme: GoogleFonts.poppinsTextTheme(),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1B5E20),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFF1B5E20), width: 2),
+            ),
+            prefixIconColor: const Color(0xFF1B5E20),
+          ),
         ),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          centerTitle: true,
-          backgroundColor: Colors.green,
-          foregroundColor: Colors.white,
-        ),
+        home: const SplashScreen(),
       ),
-      initialRoute: initialRoute,
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/member': (context) => const MemberDashboard(),
-        '/admin': (context) => const AdminDashboard(),
-      },
-      debugShowCheckedModeBanner: false,
     );
   }
 }

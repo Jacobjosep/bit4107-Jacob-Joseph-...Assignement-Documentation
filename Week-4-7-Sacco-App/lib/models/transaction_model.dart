@@ -1,43 +1,53 @@
+// File: lib/models/transaction_model.dart
 class TransactionModel {
-  final int id;
-  final int userId;
-  final String type;
+  final String id;
+  final String userId;
+  final String userName;
+  final String type; // 'deposit', 'withdrawal', 'loan_disbursement', 'loan_repayment', 'mpesa_send', 'mpesa_receive'
   final double amount;
-  final String description;
+  final DateTime transactionDate;
+  final String status; // 'completed', 'pending', 'failed', 'flagged'
   final String reference;
-  final String date;
+  final String? mpesaCode;
+  final String? description;
 
   TransactionModel({
     required this.id,
     required this.userId,
+    required this.userName,
     required this.type,
     required this.amount,
-    required this.description,
+    required this.transactionDate,
+    required this.status,
     required this.reference,
-    required this.date,
+    this.mpesaCode,
+    this.description,
   });
 
-  factory TransactionModel.fromMap(Map<String, dynamic> map) {
-    return TransactionModel(
-      id: map['id'] as int,
-      userId: map['user_id'] as int,
-      type: map['type'] as String,
-      amount: (map['amount'] as num).toDouble(),
-      description: map['description'] as String,
-      reference: map['reference'] as String,
-      date: map['date'] as String,
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'userId': userId,
+        'userName': userName,
+        'type': type,
+        'amount': amount,
+        'transactionDate': transactionDate.toIso8601String(),
+        'status': status,
+        'reference': reference,
+        'mpesaCode': mpesaCode,
+        'description': description,
+      };
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'user_id': userId,
-      'type': type,
-      'amount': amount,
-      'description': description,
-      'reference': reference,
-      'date': date,
-    };
-  }
+  factory TransactionModel.fromJson(Map<String, dynamic> json) =>
+      TransactionModel(
+        id: json['id'],
+        userId: json['userId'],
+        userName: json['userName'],
+        type: json['type'],
+        amount: json['amount'].toDouble(),
+        transactionDate: DateTime.parse(json['transactionDate']),
+        status: json['status'],
+        reference: json['reference'],
+        mpesaCode: json['mpesaCode'],
+        description: json['description'],
+      );
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../database/sacco_database.dart';
-import '../models/user_model.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'registration_screen.dart';
+import 'customer_dashboard.dart';
+import 'admin_dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,62 +13,40 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _isLoading = false;
-  String _error = '';
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  Future<void> _login() async {
-    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-      setState(() => _error = 'Please enter Username and Password');
-      return;
-    }
+  void _login() async {
+    if (_formKey.currentState!.validate()) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final success = await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
 
-    setState(() {
-      _isLoading = true;
-      _error = '';
-    });
-
-    try {
-      final db = SaccoDatabase();
-      
-      // Check if user exists with given username and password
-      final user = await db.getUserByUsername(_usernameController.text);
-      
-      if (user != null) {
-        // For demo, we're not hashing passwords. In production, use bcrypt or similar.
-        // For now, we'll check if the password matches (using a simple check)
-        // Since we don't have password field in UserModel, we'll do a separate check
-        
-        // For demonstration, we'll check credentials from the database directly
-        // We need to add a login method to the database
-        final isValid = await db.loginUser(_usernameController.text, _passwordController.text);
-        
-        if (isValid) {
-          // Save login info
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('loggedInUserId', user.id);
-          await prefs.setString('userRole', user.role);
-          await prefs.setString('userName', user.fullName);
-          
-          if (mounted) {
-            if (user.role == 'admin') {
-              Navigator.pushReplacementNamed(context, '/admin');
-            } else {
-              Navigator.pushReplacementNamed(context, '/member');
-            }
-          }
+      if (success && mounted) {
+        final user = authProvider.currentUser;
+        if (user!.role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AdminDashboard()),
+          );
         } else {
-          setState(() => _error = 'Invalid password');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const CustomerDashboard()),
+          );
         }
-      } else {
-        setState(() => _error = 'User not found. Please register first.');
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Invalid credentials"),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
-    } catch (e) {
-      setState(() => _error = 'Login error: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -76,142 +56,133 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.green, Colors.greenAccent],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+            colors: [Color(0xFF1B5E20), Color(0xFF81C784)],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(20),
               child: Card(
-                elevation: 8,
+                elevation: 10,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.account_balance,
-                        size: 64,
-                        color: Colors.green,
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        '2NK SACCO',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                      const Text(
-                        'Mobile Banking & SACCO Management',
-                        style: TextStyle(color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
-                      TextField(
-                        controller: _usernameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Username',
-                          prefixIcon: Icon(Icons.person),
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.text,
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _passwordController,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock),
-                          suffixIcon: IconButton(
-                            icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  padding: const EdgeInsets.all(30),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Welcome Back',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1B5E20),
                           ),
-                          border: const OutlineInputBorder(),
                         ),
-                        obscureText: _obscurePassword,
-                        keyboardType: TextInputType.text,
-                      ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Contact admin to reset password'),
+                        const SizedBox(height: 5),
+                        const Text(
+                          'Login to your 2NK SACCO account',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email_outlined),
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            if (!value.contains('@')) {
+                              return 'Please enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: const Icon(Icons.lock_outlined),
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            if (value.length < 6) {
+                              return 'Password must be at least 6 characters';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 30),
+                        Consumer<AuthProvider>(
+                          builder: (context, auth, child) {
+                            return SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: auth.isLoading ? null : _login,
+                                child: auth.isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.white),
+                                        ),
+                                      )
+                                    : const Text(
+                                        'LOGIN',
+                                        style: TextStyle(fontSize: 16),
+                                      ),
                               ),
                             );
                           },
-                          child: const Text('Forgot Password?'),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _login,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text(
-                                  'LOGIN',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text("Don't have an account? "),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/register');
-                            },
-                            child: const Text('Register Now'),
-                          ),
-                        ],
-                      ),
-                      if (_error.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Text(
-                            _error,
-                            style: const TextStyle(color: Colors.red),
-                            textAlign: TextAlign.center,
+                        const SizedBox(height: 20),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const RegistrationScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "Don't have an account? Register here",
+                            style: TextStyle(color: Color(0xFF1B5E20)),
                           ),
                         ),
-                      const SizedBox(height: 16),
-                      // Show test credentials
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Column(
-                          children: [
-                            Text(
-                              'Test Credentials:',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text('Admin: admin / admin123'),
-                            Text('Member: john / member123'),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -220,5 +191,12 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

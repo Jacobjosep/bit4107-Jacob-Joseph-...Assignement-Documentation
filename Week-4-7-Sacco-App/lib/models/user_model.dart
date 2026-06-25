@@ -1,39 +1,59 @@
 class UserModel {
-  final int id;
-  final String fullName;
-  final String username;
-  final String phone;
+  final String id;
+  String fullName;
+  String email;
+  String phoneNumber;
+  final String idNumber;
+  final String memberNumber;
   final String role;
-  final String createdAt;
+  double accountBalance;
+  double savingsBalance;
+  final DateTime registrationDate;
+  bool isActive;
+  String? profilePicturePath;
 
   UserModel({
     required this.id,
     required this.fullName,
-    required this.username,
-    required this.phone,
+    required this.email,
+    required this.phoneNumber,
+    required this.idNumber,
+    required this.memberNumber,
     required this.role,
-    required this.createdAt,
+    this.accountBalance = 0.0,
+    this.savingsBalance = 0.0,
+    required this.registrationDate,
+    this.isActive = true,
+    this.profilePicturePath,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
-      id: map['id'] as int,
-      fullName: map['full_name'] as String,
-      username: map['username'] as String,
-      phone: map['phone'] as String,
-      role: map['role'] as String,
-      createdAt: map['created_at'] as String,
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'fullName': fullName,
+        'email': email,
+        'phoneNumber': phoneNumber,
+        'idNumber': idNumber,
+        'memberNumber': memberNumber,
+        'role': role,
+        'accountBalance': accountBalance,
+        'savingsBalance': savingsBalance,
+        'registrationDate': registrationDate.toIso8601String(),
+        'isActive': isActive,
+        'profilePicturePath': profilePicturePath,
+      };
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'full_name': fullName,
-      'username': username,
-      'phone': phone,
-      'role': role,
-      'created_at': createdAt,
-    };
-  }
+  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
+        id: json['id'],
+        fullName: json['fullName'],
+        email: json['email'],
+        phoneNumber: json['phoneNumber'],
+        idNumber: json['idNumber'],
+        memberNumber: json['memberNumber'],
+        role: json['role'],
+        accountBalance: json['accountBalance']?.toDouble() ?? 0.0,
+        savingsBalance: json['savingsBalance']?.toDouble() ?? 0.0,
+        registrationDate: DateTime.parse(json['registrationDate']),
+        isActive: json['isActive'] ?? true,
+        profilePicturePath: json['profilePicturePath'],
+      );
 }
